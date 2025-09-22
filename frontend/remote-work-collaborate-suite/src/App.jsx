@@ -1,9 +1,9 @@
 // src/App.jsx
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Signup from './Signup.jsx';
-import Login from './Login.jsx';
-import Dashboard from './Dashboard.jsx';
+import Signup from './pages/Signup.jsx';
+import Login from './pages/Login.jsx';
+import Dashboard from './pages/Dashboard.jsx';
 
 function App() {
   const [user, setUser] = useState(null);

@@ -1,9 +1,11 @@
 // backend/middleware/authMiddleware.js
 import jwt from 'jsonwebtoken';
 
-export const requireAuth = (req, res, next) => {
+// Middleware function to protect routes
+export const authMiddleware = (req, res, next) => {
   const authHeader = req.headers.authorization || '';
-  if (!authHeader.startsWith('Bearer ')) return res.status(401).json({ error: 'Missing token' });
+  if (!authHeader.startsWith('Bearer '))
+    return res.status(401).json({ error: 'Missing token' });
 
   const token = authHeader.split(' ')[1];
   try {

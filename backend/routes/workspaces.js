@@ -167,12 +167,46 @@ router.get('/my', authMiddleware, async (req, res) => {
     const result = workspaces.map(w => ({
       ...w,
       role: roleMap[w.id]?.role || 'member',
-      joined_at: roleMap[w.id]?.joined_at || null
+      joined_at: roleMap[w.id]?.joined_at || null,
+      chatInitiated: w.chat_initiated || false // ⚡ added field
     }));
 
     return res.json({ workspaces: result });
   } catch (err) {
     console.error('Get my workspaces error:', err);
+    return res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
+
+// POST /api/workspaces/:id/start-chat
+router.post('/:id/start-chat', authMiddleware, async (req, res) => {
+  try {
+    const workspaceId = req.params.id;
+    const userId = req.user?.userId;
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    // Check if user is owner of workspace
+    const { data: member, error: mErr } = await supabase
+      .from('workspacemembers')
+      .select('role')
+      .eq('workspace_id', workspaceId)
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (mErr) throw mErr;
+    if (!member || member.role !== 'owner') return res.status(403).json({ error: 'Only owner can start chat' });
+
+    // Update workspace to start chat
+    const { data: workspace, error: wErr } = await supabase
+      .from('workspaces')
+      .update({ chat_initiated: true })
+      .eq('id', workspaceId)
+      .select()
+      .maybeSingle();
+    if (wErr) throw wErr;
+
+    return res.json({ message: 'Chat started', workspace });
+  } catch (err) {
+    console.error('Start chat error:', err);
     return res.status(500).json({ error: err.message || 'Server error' });
   }
 });

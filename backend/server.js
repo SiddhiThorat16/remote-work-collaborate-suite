@@ -6,6 +6,9 @@ import bodyParser from 'body-parser';
 import dotenv from 'dotenv';
 import authRoutes from './routes/auth.js'; // import signup/login routes
 import workspacesRouter from './routes/workspaces.js';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+import messagesRouter from './routes/messages.js';
 
 dotenv.config(); // load .env variables
 
@@ -18,16 +21,51 @@ app.use(bodyParser.json());
 // Mount auth routes
 app.use('/api/auth', authRoutes);
 
+// Workspace routes
+app.use('/api/workspaces', workspacesRouter);
+
+// Messages routes ✅
+app.use('/api/messages', messagesRouter);
+
 // Test route
 app.get('/', (req, res) => {
   res.send('Supabase backend is running!');
 });
 
-// Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+// Create HTTP server (needed for socket.io)
+const httpServer = createServer(app);
+
+// Setup socket.io
+const io = new Server(httpServer, {
+  cors: {
+    origin: 'http://localhost:3000', // frontend URL
+    methods: ['GET', 'POST'],
+  },
 });
 
-// Workspace
-app.use('/api/workspaces', workspacesRouter)
+// Socket.io events
+io.on('connection', (socket) => {
+  console.log('User connected:', socket.id);
+
+  // join workspace chat room
+  socket.on('joinWorkspace', (workspaceId) => {
+    socket.join(workspaceId);
+    console.log(`User ${socket.id} joined workspace ${workspaceId}`);
+  });
+
+  // new message
+  socket.on('sendMessage', (message) => {
+    // broadcast to others in the same workspace
+    io.to(message.workspace_id).emit('receiveMessage', message);
+  });
+
+  socket.on('disconnect', () => {
+    console.log('User disconnected:', socket.id);
+  });
+});
+
+// Start server
+const PORT = process.env.PORT || 5000;
+httpServer.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

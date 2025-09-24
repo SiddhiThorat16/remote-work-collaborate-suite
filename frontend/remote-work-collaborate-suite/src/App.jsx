@@ -5,6 +5,7 @@ import Signup from './pages/Signup.jsx';
 import Login from './pages/Login.jsx';
 import Dashboard from './pages/Dashboard.jsx';
 import ChatPage from './pages/chatPage.jsx'; // ⚡ New chat page
+import BoardPage from './pages/BoardPage';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -17,6 +18,7 @@ function App() {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/chat/:workspaceId" element={<ChatPage />} /> {/* ⚡ Chat page route */}
         <Route path="*" element={<Login setUser={setUser} />} /> {/* default route */}
+        <Route path="/boards/:workspaceId" element={<BoardPage />} />
       </Routes>
     </Router>
   );

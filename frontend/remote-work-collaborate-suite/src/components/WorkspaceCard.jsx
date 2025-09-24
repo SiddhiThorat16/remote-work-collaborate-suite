@@ -6,7 +6,6 @@ const WorkspaceCard = ({ workspace, onInitiateChat }) => {
   const [chatInitiated, setChatInitiated] = useState(workspace.chat_initiated || false);
   const navigate = useNavigate();
 
-  // Owner clicks "Initiate Chat"
   const handleInitiateChat = () => {
     if (onInitiateChat) {
       onInitiateChat(workspace.id)
@@ -18,9 +17,12 @@ const WorkspaceCard = ({ workspace, onInitiateChat }) => {
     }
   };
 
-  // Navigate to Chat Page
   const handleStartChat = () => {
     navigate(`/chat/${workspace.id}`, { state: { workspaceName: workspace.name } });
+  };
+
+  const handleGoToBoards = () => {
+    navigate(`/boards/${workspace.id}`);
   };
 
   return (
@@ -62,6 +64,14 @@ const WorkspaceCard = ({ workspace, onInitiateChat }) => {
           }`}
         >
           Start Chat
+        </button>
+
+        {/* New button to go to Boards */}
+        <button
+          onClick={handleGoToBoards}
+          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200"
+        >
+          Go to Boards
         </button>
       </div>
     </div>

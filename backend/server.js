@@ -9,6 +9,7 @@ import workspacesRouter from './routes/workspaces.js';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import messagesRouter from './routes/messages.js';
+import boardsRouter from './routes/boards.js';
 
 dotenv.config(); // load .env variables
 
@@ -43,6 +44,9 @@ const io = new Server(httpServer, {
   },
 });
 
+// Make io available to routes via app.get('io')
+app.set('io', io);
+
 // Socket.io events
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
@@ -63,6 +67,9 @@ io.on('connection', (socket) => {
     console.log('User disconnected:', socket.id);
   });
 });
+
+// Task Boards routes (mounted after io is set so routes can access req.app.get('io'))
+app.use('/api/boards', boardsRouter);
 
 // Start server
 const PORT = process.env.PORT || 5000;

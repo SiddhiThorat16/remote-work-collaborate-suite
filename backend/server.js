@@ -10,6 +10,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import messagesRouter from './routes/messages.js';
 import boardsRouter from './routes/boards.js';
+import callRouter from './routes/call.js';
 
 dotenv.config(); // load .env variables
 
@@ -39,7 +40,7 @@ const httpServer = createServer(app);
 // Setup socket.io
 const io = new Server(httpServer, {
   cors: {
-    origin: 'http://localhost:3000', // frontend URL
+    origin: 'http://localhost:5173', // frontend URL
     methods: ['GET', 'POST'],
   },
 });
@@ -47,7 +48,7 @@ const io = new Server(httpServer, {
 // Make io available to routes via app.get('io')
 app.set('io', io);
 
-// Socket.io events
+// --------------------- Socket.io events --------------------- //
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
@@ -63,6 +64,26 @@ io.on('connection', (socket) => {
     io.to(message.workspace_id).emit('receiveMessage', message);
   });
 
+  // ---------------- WebRTC Video Call ---------------- //
+  socket.on('join-room', (roomId, userId) => {
+    socket.join(roomId);
+    console.log(`User ${userId} joined video call room ${roomId}`);
+
+    // Notify other users in the room
+    socket.to(roomId).emit('user-connected', userId);
+
+    // Handle signaling data
+    socket.on('signal', ({ userId: targetUserId, signal }) => {
+      io.to(targetUserId).emit('signal', { userId: socket.id, signal });
+    });
+
+    // Handle disconnect from call
+    socket.on('disconnect', () => {
+      socket.to(roomId).emit('user-disconnected', userId);
+      console.log(`User ${userId} disconnected from room ${roomId}`);
+    });
+  });
+
   socket.on('disconnect', () => {
     console.log('User disconnected:', socket.id);
   });
@@ -76,3 +97,5 @@ const PORT = process.env.PORT || 5000;
 httpServer.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
+
+app.use('/api/call', callRouter);

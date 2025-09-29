@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import WorkspaceCard from '../components/WorkspaceCard';
+import { Dialog } from '@headlessui/react';
 
 const Dashboard = () => {
   const [workspaces, setWorkspaces] = useState([]);
@@ -18,6 +19,7 @@ const Dashboard = () => {
   const [joinWorkspaceId, setJoinWorkspaceId] = useState('');
   const [joinModalError, setJoinModalError] = useState('');
 
+  // Fetch workspaces on load
   useEffect(() => {
     fetchWorkspaces();
   }, []);

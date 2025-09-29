@@ -7,6 +7,8 @@ import Dashboard from './pages/Dashboard.jsx';
 import ChatPage from './pages/chatPage.jsx'; // ⚡ New chat page
 import BoardPage from './pages/BoardPage';
 import CollabTest from './pages/CollabTest';
+import DocumentEditor from './pages/DocumentEditor.jsx';
+import Whiteboard from './components/Whiteboard.jsx';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -21,7 +23,8 @@ function App() {
         <Route path="*" element={<Login setUser={setUser} />} /> {/* default route */}
         <Route path="/boards/:workspaceId" element={<BoardPage />} />
         <Route path="/collab" element={<CollabTest />} />
-        {/* <CollaborativeEditor docName="workspace-1" /> */}
+        <Route path="/editor/:docName" element={<DocumentEditor docName="default-doc" />} />
+        <Route path="/whiteboard/:workspaceId?" element={<Whiteboard />} />
 
       </Routes>
     </Router>

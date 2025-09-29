@@ -1,84 +1,125 @@
-// backend/yjs-server.js
 import http from 'http';
-import WebSocket, { WebSocketServer } from 'ws';
+import { WebSocketServer } from 'ws';
 import * as Y from 'yjs';
+import { setupWSConnection } from 'y-websocket/bin/utils.js'; // ✅ Correct ESM import
 import { supabase } from './supabaseClient.js';
 import { Buffer } from 'buffer';
-
-// Import setup helpers from y-websocket
-import { setupWSConnection, setPersistence } from 'y-websocket/bin/utils.cjs';
+import 'dotenv/config';
 
 const PORT = process.env.YJS_PORT || 1234;
 
-// ------------------------
-// Persistence using Supabase
-// ------------------------
-setPersistence({
-  bindState: async (docName, ydoc) => {
-    try {
-      const { data, error } = await supabase
-        .from('yjs_snapshots')
-        .select('snapshot')
-        .eq('id', docName)       // docName corresponds to snapshot.id
+// --- helper to get UUID from human-readable doc name ---
+async function getDocumentId(humanId) {
+  try {
+    const { data, error } = await supabase
+      .from('documents')
+      .select('id')
+      .eq('human_id', humanId)
+      .maybeSingle();
+
+    if (error) {
+      console.error(`[yjs] Error looking up document "${humanId}"`, error);
+      return null;
+    }
+
+    if (!data) {
+      console.warn(`[yjs] Document "${humanId}" not found, creating a new UUID`);
+      const { data: newDoc, error: insertError } = await supabase
+        .from('documents')
+        .insert({ human_id: humanId, title: humanId })
+        .select('id')
         .maybeSingle();
 
-      if (error) {
-        console.error('Supabase bindState read error', error);
-        return;
+      if (insertError) {
+        console.error('[yjs] Failed to create new document:', insertError);
+        return null;
       }
 
-      if (data?.snapshot) {
-        const buf = Buffer.from(data.snapshot, 'base64');
-        Y.applyUpdate(ydoc, new Uint8Array(buf));
-        console.log(`[yjs] Loaded snapshot for ${docName} (${buf.length} bytes)`);
-      } else {
-        console.log(`[yjs] No snapshot found for ${docName} (new doc)`);
-      }
-    } catch (e) {
-      console.error('bindState exception', e);
+      return newDoc.id;
     }
-  },
 
-  writeState: async (docName, ydoc) => {
-    try {
-      const update = Y.encodeStateAsUpdate(ydoc);
-      const base64 = Buffer.from(update).toString('base64');
-
-      const payload = {
-        id: docName,
-        snapshot: base64,
-        updated_at: new Date().toISOString()
-      };
-
-      const { error } = await supabase
-        .from('yjs_snapshots')
-        .upsert(payload, { returning: 'minimal' });
-
-      if (error) console.error('Supabase writeState upsert error', error);
-      else console.log(`[yjs] Wrote snapshot for ${docName} (${update.length} bytes)`);
-    } catch (e) {
-      console.error('writeState exception', e);
-    }
+    return data.id;
+  } catch (err) {
+    console.error('[yjs] getDocumentId failed:', err);
+    return null;
   }
-});
+}
 
-// ------------------------
-// HTTP + WebSocket server
-// ------------------------
+// --- persistence functions ---
+async function loadSnapshot(docId, ydoc) {
+  try {
+    const { data, error } = await supabase
+      .from('yjs_snapshots')
+      .select('snapshot')
+      .eq('document_id', docId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('[yjs] Supabase read error', error);
+      return;
+    }
+
+    if (data && data.snapshot) {
+      const buf = Buffer.from(data.snapshot, 'base64');
+      Y.applyUpdate(ydoc, new Uint8Array(buf));
+      console.log(`[yjs] Loaded snapshot for ${docId}`);
+    }
+  } catch (err) {
+    console.error('[yjs] Snapshot load failed', err);
+  }
+}
+
+async function saveSnapshot(docId, ydoc) {
+  try {
+    const update = Y.encodeStateAsUpdate(ydoc);
+    const base64 = Buffer.from(update).toString('base64');
+    const { error } = await supabase
+      .from('yjs_snapshots')
+      .upsert({
+        document_id: docId,
+        snapshot: base64,
+        updated_at: new Date().toISOString(),
+      });
+
+    if (error) {
+      console.error('[yjs] Supabase write error', error);
+    } else {
+      console.log(`[yjs] Saved snapshot for ${docId}`);
+    }
+  } catch (err) {
+    console.error('[yjs] Snapshot save failed', err);
+  }
+}
+
+// --- HTTP + WebSocket server ---
 const server = http.createServer((req, res) => {
   res.writeHead(200, { 'Content-Type': 'text/plain' });
-  res.end('Yjs websocket server alive\n');
+  res.end('Yjs WebSocket server is alive\n');
 });
 
 const wss = new WebSocketServer({ server });
 
-wss.on('connection', (conn, req) => {
-  // setupWSConnection handles Yjs protocol (sync + awareness)
-  // clients connect to ws://HOST:PORT/<docName>
-  setupWSConnection(conn, req);
+wss.on('connection', async (conn, req) => {
+  const humanId = req.url.slice(1) || 'default-doc';
+  const docId = await getDocumentId(humanId);
+
+  if (!docId) {
+    conn.close();
+    return;
+  }
+
+  const ydoc = new Y.Doc();
+  await loadSnapshot(docId, ydoc);
+
+  setupWSConnection(conn, req, {
+    docName: docId,
+    gc: true,
+    onDisconnect: async () => {
+      await saveSnapshot(docId, ydoc);
+    },
+  });
 });
 
 server.listen(PORT, () => {
-  console.log(`[yjs] server listening on port ${PORT}`);
-  console.log(`[yjs] use ws://<host>:${PORT}/<docName> to connect`);
+  console.log(`[yjs] Server listening on port ${PORT}`);
 });

@@ -3,13 +3,18 @@
     "@reduxjs/toolkit": "^2.9.0",
     "autoprefixer": "^10.4.21",
     "axios": "^1.12.2",
+    "highlight.js": "^11.11.1",
+    "katex": "^0.16.22",
     "postcss": "^8.5.6",
+    "quill": "^2.0.3",
     "react": "^18.3.1",
     "react-beautiful-dnd": "^13.1.1",
     "react-dom": "^18.3.1",
+    "react-quill": "^2.0.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.9.1",
     "socket.io-client": "^4.8.1",
-    "tailwindcss": "^4.1.13"
+    "tailwindcss": "^4.1.13",
+    "y-quill": "^1.0.0"
   }
 }

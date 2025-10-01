@@ -68,27 +68,6 @@ const CollaborativeEditor = ({ docName = "default-doc" }) => {
       quillRef.current = null;
     };
   }, [docName]);
-
-  return (
-    <div className="flex justify-center items-start min-h-screen bg-gradient-to-br from-purple-100 via-pink-50 to-white py-12">
-      <div className="w-11/12 max-w-5xl bg-white shadow-xl rounded-2xl p-8 border border-purple-200">
-        <h1 className="text-3xl font-extrabold mb-6 text-purple-700 text-center">
-          ✨ Collaborative Document Editor
-        </h1>
-        <div
-          ref={editorRef}
-          style={{
-            height: "550px",
-            border: "2px solid #ddd",
-            borderRadius: "12px",
-            padding: "8px",
-            backgroundColor: "#fafafa",
-            boxShadow: "inset 0 2px 4px rgba(0,0,0,0.05)",
-          }}
-        />
-      </div>
-    </div>
-  );
 };
 
 export default CollaborativeEditor;

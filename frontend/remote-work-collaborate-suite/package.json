@@ -17,6 +17,7 @@
     "buffer": "^6.0.3",
     "events": "^3.3.0",
     "highlight.js": "^11.11.1",
+    "jspdf": "^3.0.3",
     "konva": "^10.0.2",
     "lucide-react": "^0.544.0",
     "process": "^0.11.10",

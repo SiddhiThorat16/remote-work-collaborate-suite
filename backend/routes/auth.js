@@ -1,4 +1,3 @@
-// backend/routes/auth.js
 import express from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -65,23 +64,50 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ error: 'Missing fields' });
 
-    const { data, error } = await supabase
+    const { data: userData, error } = await supabase
       .from('users')
       .select('*')
       .eq('email', email)
       .maybeSingle();
 
     if (error) throw error;
-    if (!data) return res.status(401).json({ error: 'Invalid credentials' });
+    if (!userData) return res.status(401).json({ error: 'Invalid credentials' });
 
-    const match = await bcrypt.compare(password, data.password || '');
+    const match = await bcrypt.compare(password, userData.password);
     if (!match) return res.status(401).json({ error: 'Invalid credentials' });
 
-    const token = jwt.sign({ userId: data.id, email: data.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+    // Mark user as online
+    await supabase.from('user_status').upsert({
+      user_id: userData.id,
+      online: true,
+      last_seen: new Date().toISOString()
+    });
+
+    // Fetch workspace memberships
+    const { data: members } = await supabase
+      .from('workspace_members')
+      .select('user_id, workspace_id')
+      .neq('user_id', userData.id);
+
+    // Generate notifications for others
+    if (members && members.length > 0) {
+      const notifications = members.map(m => ({
+        user_id: m.user_id,
+        workspace_id: m.workspace_id,
+        type: 'presence',
+        text: `${userData.human_id || 'Someone'} just logged in`,
+        created_at: new Date()
+      }));
+      await supabase.from('notifications').insert(notifications);
+    }
+
+    // generate JWT
+    const token = jwt.sign({ userId: userData.id, email: userData.email }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
     res.json({
       message: 'Login successful',
       token,
-      user: { id: data.id, name: data.name, email: data.email, human_id: data.human_id }
+      user: { id: userData.id, name: userData.name, email: userData.email, human_id: userData.human_id }
     });
   } catch (err) {
     console.error('Login error:', err);

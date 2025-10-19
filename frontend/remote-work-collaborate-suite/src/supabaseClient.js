@@ -1,4 +1,7 @@
+// frontend/remote-work-collaborate-suite/src/supabaseClient.js
+
 import { createClient } from '@supabase/supabase-js';
+
 
 // 🔑 Replace these with your own project values
 const supabaseUrl = "https://zfjdebazaezeaugmtqvy.supabase.co";

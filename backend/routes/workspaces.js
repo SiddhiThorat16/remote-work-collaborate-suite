@@ -1,9 +1,26 @@
+// GET /api/workspaces/all-users
+
+
+
 // backend/routes/workspaces.js
 import express from 'express';
 import { supabase } from '../supabaseClient.js';
 import { authMiddleware } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
+
+router.get('/all-users', authMiddleware, async (req, res) => {
+  try {
+    const { data: users, error } = await supabase
+      .from('users')
+      .select('id, human_id, name');
+    if (error) throw error;
+    return res.json({ users });
+  } catch (err) {
+    console.error('Get all users error:', err);
+    return res.status(500).json({ error: err.message || 'Server error' });
+  }
+});
 
 // Helper: make a readable slug + short random suffix
 function generateHumanId(name) {
@@ -155,20 +172,44 @@ router.get('/my', authMiddleware, async (req, res) => {
     const workspaceIds = members.map(m => m.workspace_id);
     if (workspaceIds.length === 0) return res.json({ workspaces: [] });
 
+    // Fetch workspaces
     const { data: workspaces, error: wErr } = await supabase
       .from('workspaces')
       .select('*')
       .in('id', workspaceIds);
     if (wErr) throw wErr;
 
+    // Fetch all members for these workspaces
+    const { data: allMembers, error: allErr } = await supabase
+      .from('workspacemembers')
+      .select('workspace_id, user_id, human_id, role')
+      .in('workspace_id', workspaceIds);
+    if (allErr) throw allErr;
+
+    // Fetch user names for all members
+    const userIds = Array.from(new Set(allMembers.map(m => m.user_id)));
+    const { data: userInfos, error: userErr } = await supabase
+      .from('users')
+      .select('id, name')
+      .in('id', userIds);
+    if (userErr) throw userErr;
+    const userMap = {};
+    userInfos.forEach(u => { userMap[u.id] = u.name; });
+
+    // Attach members to each workspace
     const roleMap = {};
     members.forEach(m => { roleMap[m.workspace_id] = { role: m.role, joined_at: m.joined_at }; });
-
     const result = workspaces.map(w => ({
       ...w,
       role: roleMap[w.id]?.role || 'member',
       joined_at: roleMap[w.id]?.joined_at || null,
-      chatInitiated: w.chat_initiated || false // ⚡ added field
+      chatInitiated: w.chat_initiated || false,
+      members: allMembers.filter(m => m.workspace_id === w.id).map(m => ({
+        user_id: m.user_id,
+        human_id: m.human_id,
+        name: userMap[m.user_id] || '',
+        role: m.role
+      }))
     }));
 
     return res.json({ workspaces: result });

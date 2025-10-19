@@ -29,7 +29,7 @@ const Signup = () => {
       <div className="flex w-full max-w-4xl h-[650px] shadow-2xl rounded-3xl overflow-hidden border border-purple-200 bg-white/95 backdrop-blur-lg">
         {/* Left branding/illustration section */}
         <div className="hidden md:flex flex-col justify-center items-center w-1/2 bg-gradient-to-br from-purple-500 via-indigo-400 to-pink-300 text-white p-10 relative">
-          <div className="absolute top-8 left-8 text-2xl font-extrabold tracking-tight drop-shadow-lg">Labmentix</div>
+          <div className="absolute top-8 left-8 text-2xl font-extrabold tracking-tight drop-shadow-lg">TeleSync</div>
           <div className="flex flex-col items-center gap-6">
             <span className="inline-block bg-white/20 rounded-full px-8 py-6 text-5xl font-bold shadow-lg animate-bounce border-4 border-white">📝</span>
             <span className="text-3xl font-extrabold text-white drop-shadow-lg text-center">Welcome to Collaboration Suite</span>

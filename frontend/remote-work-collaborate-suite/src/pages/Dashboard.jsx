@@ -3,6 +3,8 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import WorkspaceCard from '../components/WorkspaceCard';
 import { Dialog } from '@headlessui/react';
+import UserListForDM from '../components/UserListForDM';
+import PrivateChatWindow from '../components/PrivateChatWindow';
 
 const Dashboard = () => {
   const [workspaces, setWorkspaces] = useState([]);
@@ -19,7 +21,9 @@ const Dashboard = () => {
   const [joinWorkspaceId, setJoinWorkspaceId] = useState('');
   const [joinModalError, setJoinModalError] = useState('');
 
-  // Fetch workspaces on load
+  // 1-to-1 chat state
+  const [showDMList, setShowDMList] = useState(false);
+  const [dmUser, setDMUser] = useState(null);
   useEffect(() => {
     fetchWorkspaces();
   }, []);
@@ -110,7 +114,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100 p-0">
       <div className="max-w-7xl mx-auto px-4 py-10">
-        {/* Hero Header */}
+  {/* Hero Header */}
         <div className="flex flex-col md:flex-row items-center justify-between mb-10 gap-6">
           <div className="flex items-center gap-4">
             <span className="inline-block bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-full px-6 py-3 text-3xl font-bold shadow-lg border-4 border-white">📁</span>
@@ -120,6 +124,12 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="flex gap-4">
+            <button
+              className="px-6 py-2 bg-gradient-to-r from-pink-400 to-purple-400 text-white font-bold rounded-xl shadow-lg hover:scale-105 hover:bg-pink-700 transition-all duration-200"
+              onClick={() => setShowDMList(true)}
+            >
+              <span className="flex items-center gap-2"><svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M16 12l-4-4-4 4m8 0v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6" /></svg> 1-to-1 Chat</span>
+            </button>
             <button
               className="px-6 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-bold rounded-xl shadow-lg hover:scale-105 hover:bg-indigo-700 transition-all duration-200"
               onClick={() => { setShowCreateModal(true); setCreateModalError(''); }}
@@ -159,10 +169,21 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* ---------- Create Workspace Modal ---------- */}
+      {/* ---------- 1-to-1 Chat Modal ---------- */}
+      {showDMList && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl border border-pink-200 relative">
+            <button className="absolute top-4 right-4 px-3 py-1 bg-pink-100 text-pink-700 rounded-lg font-bold" onClick={() => setShowDMList(false)}>Close</button>
+            <UserListForDM onSelectUser={user => { setDMUser(user); setShowDMList(false); }} />
+          </div>
+        </div>
+      )}
+      {dmUser && (
+        <PrivateChatWindow user={dmUser} onClose={() => setDMUser(null)} />
+      )}
       {showCreateModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white/90 backdrop-blur-xl rounded-2xl p-8 w-full max-w-md shadow-2xl border border-purple-200">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl border border-purple-200">
             <h2 className="text-2xl font-extrabold text-purple-700 mb-6 text-center">Create Workspace</h2>
             <form onSubmit={handleCreateWorkspace} className="space-y-4">
               <input
@@ -200,7 +221,7 @@ const Dashboard = () => {
       {/* ---------- Join Workspace Modal ---------- */}
       {showJoinModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white/90 backdrop-blur-xl rounded-2xl p-8 w-full max-w-md shadow-2xl border border-green-200">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-md shadow-2xl border border-green-200">
             <h2 className="text-2xl font-extrabold text-green-700 mb-6 text-center">Join Workspace</h2>
             <form onSubmit={handleJoinWorkspace} className="space-y-4">
               <input

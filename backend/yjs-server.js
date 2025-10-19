@@ -1,10 +1,12 @@
+// remote-work-collaborate-suite/backend/yjs-server.js
 import http from 'http';
 import { WebSocketServer } from 'ws';
 import * as Y from 'yjs';
-import { setupWSConnection } from 'y-websocket/bin/utils.js'; // ✅ Correct ESM import
+import { setupWSConnection } from '@y-websocket/server' // ✅ Correct ESM import
 import { supabase } from './supabaseClient.js';
 import { Buffer } from 'buffer';
 import 'dotenv/config';
+import { cursorTo } from 'readline';
 
 const PORT = process.env.YJS_PORT || 1234;
 

@@ -8,7 +8,7 @@ const Home = () => {
       <div className="flex flex-col items-center justify-center w-full max-w-3xl bg-white/95 shadow-2xl rounded-3xl px-10 py-16 border border-purple-200 backdrop-blur-lg">
         <div className="mb-10 text-center">
           <span className="inline-block bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-full px-6 py-3 text-3xl font-bold shadow-lg border-4 border-white">🚀</span>
-          <div className="mt-4 text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-600 drop-shadow-lg tracking-tight">Welcome to Remote Work Suite</div>
+          <div className="mt-4 text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 via-purple-700 to-pink-600 drop-shadow-lg tracking-tight">Welcome to TeleSync</div>
           <div className="mt-2 text-lg text-gray-500 font-medium">Collaborate, chat, and create in real time.</div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full mt-8">

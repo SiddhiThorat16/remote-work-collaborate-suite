@@ -16,6 +16,7 @@ import Settings from './pages/Settings.jsx';
 import Navbar from './components/Navbar';
 import MyHub from './pages/MyHub.jsx';
 import { supabase } from './supabaseClient';
+import VideoRoom from './components/VideoRoom';
 
 function AppRoutes({ user, setUser }) {
   const location = useLocation();
@@ -39,6 +40,7 @@ function AppRoutes({ user, setUser }) {
         <Route path="/profile" element={<Profile />} />
         <Route path='/settings' element={<Settings />} />
         <Route path="/my-hub" element={<MyHub user={user} />} /> {/* Pass user */}
+        <Route path="/video/:roomId" element={<VideoRoom />} />
       </Routes>
     </>
   );

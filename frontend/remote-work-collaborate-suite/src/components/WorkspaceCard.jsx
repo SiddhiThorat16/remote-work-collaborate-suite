@@ -16,6 +16,10 @@ const WorkspaceCard = ({ workspace }) => {
     navigate(`/whiteboard/${workspace.id}`);
   };
 
+  const handleGoToVideoCall = () => {
+    navigate(`/video/${workspace.id}`);
+  };
+
   return (
     <div
       className="bg-white/95 backdrop-blur-2xl shadow-2xl rounded-[2.5rem] pt-16 pb-8 px-8 hover:scale-[1.04] hover:shadow-purple-300/40 transition-all duration-300 border border-purple-100 flex flex-col gap-3 relative overflow-visible group mb-8 mr-4"
@@ -92,6 +96,16 @@ const WorkspaceCard = ({ workspace }) => {
             <path strokeLinecap="round" strokeLinejoin="round" d="M4 4h16v16H4z" />
           </svg>
           Go to Whiteboard
+        </button>
+
+        <button
+          onClick={handleGoToVideoCall}
+          className="flex items-center justify-center gap-2 px-5 py-2 bg-gradient-to-r from-green-400 to-blue-600 text-white font-bold rounded-xl shadow-lg hover:scale-105 hover:bg-green-700 transition-all duration-200 group-hover:ring-2 group-hover:ring-blue-400"
+        >
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 10v4m4-2h-12a2 2 0 01-2-2v-4a2 2 0 012-2h12a2 2 0 012 2v4a2 2 0 01-2 2z"/>
+          </svg>
+          Join Video Call
         </button>
       </div>
     </div>

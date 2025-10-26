@@ -1,4 +1,4 @@
-// src/api.js
+// frontend/remote-work-collaborate-suite/src/api.js
 import { supabase } from "./supabaseClient";
 
 // ------------------- Boards -------------------
@@ -105,6 +105,57 @@ export async function deleteTask(taskId) {
   return data;
 }
 
+// ------------------- User Settings -------------------
+
+// Get user settings
+export async function getUserSettings(userId) {
+  const { data, error } = await supabase
+    .from("user_settings")
+    .select("*")
+    .eq("user_id", userId)
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// Update user settings
+export async function updateUserSettings(userId, settings) {
+  const { data, error } = await supabase
+    .from("user_settings")
+    .upsert({
+      user_id: userId,
+      theme: settings.theme,
+      notifications_enabled: settings.notifications,
+      updated_at: new Date().toISOString()
+    })
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
+}
+
+// Update user password
+export async function updateUserPassword(newPassword) {
+  const { error } = await supabase.auth.updateUser({
+    password: newPassword
+  });
+
+  if (error) throw error;
+  return true;
+}
+
+// Update user email
+export async function updateUserEmail(newEmail) {
+  const { error } = await supabase.auth.updateUser({
+    email: newEmail
+  });
+
+  if (error) throw error;
+  return true;
+}
+
 // ✅ Default export
 const api = {
   getBoards,
@@ -115,6 +166,10 @@ const api = {
   addTask,
   updateTask,
   deleteTask,
+  getUserSettings,
+  updateUserSettings,
+  updateUserPassword,
+  updateUserEmail,
 };
 
 export default api;

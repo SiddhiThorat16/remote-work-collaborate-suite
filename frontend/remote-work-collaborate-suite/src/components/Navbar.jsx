@@ -1,8 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 // Nav brand logo
-import logo from "../assets/Logo.png"; 
-// Avatar image (replace path as needed)
+import logo from "../assets/logo.png"; 
 import avatar from "../assets/avatar.png"; 
 
 export default function Navbar() {

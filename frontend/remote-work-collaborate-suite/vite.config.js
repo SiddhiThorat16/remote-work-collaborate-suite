@@ -18,5 +18,10 @@ export default defineConfig({
     proxy: {
       '/api': 'http://localhost:5000'
     }
-  }
+  },
+  build: {
+    rollupOptions: {
+      external: ['katex/dist/katex.min.css'],
+    },
+  },
 });

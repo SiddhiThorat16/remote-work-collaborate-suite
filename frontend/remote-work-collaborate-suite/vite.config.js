@@ -21,7 +21,7 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      external: ['katex/dist/katex.min.css'],
+      external: ['katex/katex.min.css'],
     },
   },
 });

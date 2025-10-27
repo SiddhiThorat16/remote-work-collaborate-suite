@@ -4,7 +4,7 @@ import { WebsocketProvider } from "y-websocket";
 import { QuillBinding } from "y-quill";
 import Quill from "quill";
 import "quill/dist/quill.snow.css";
-import "katex/dist/katex.min.css";
+import "katex/katex.min.css";
 
 const CollaborativeEditor = ({ docName = "default-doc" }) => {
   const editorRef = useRef(null);

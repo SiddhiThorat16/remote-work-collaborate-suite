@@ -1,3 +1,4 @@
+// remote-work-collaborate-suite/frontend/remote-work-collaborate-suite/vite.config.js
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfill';
@@ -6,13 +7,14 @@ import { NodeModulesPolyfillPlugin } from '@esbuild-plugins/node-modules-polyfil
 export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
+    include: ["quill", "yjs", "y-websocket", "y-quill"], // <-- Top-level include
     esbuildOptions: {
       define: { global: 'globalThis' },
       plugins: [
         NodeGlobalsPolyfillPlugin({ buffer: true }),
         NodeModulesPolyfillPlugin(),
       ],
-    },
+    }
   },
   server: {
     proxy: {
@@ -21,7 +23,7 @@ export default defineConfig({
   },
   build: {
     rollupOptions: {
-      external: ['katex/katex.min.css'],
+      external: ['katex/dist/katex.min.css'], // Use correct path if needed
     },
   },
 });
